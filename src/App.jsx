@@ -29,6 +29,17 @@ const horarioPermitido = () => {
   return hora >= 7 && hora < 17;
 };
 
+const gerarTempoAtendimento = (tipo) => {
+  if (tipo === "SP") {
+    return tiposSenha.SP.tmBase + (Math.random() * (tiposSenha.SP.variacao * 2) - tiposSenha.SP.variacao);
+  } else if (tipo === "SG") {
+    return tiposSenha.SG.tmBase + (Math.random() * (tiposSenha.SG.variacao * 2) - tiposSenha.SG.variacao);
+  } else if (tipo === "SE") {
+    return Math.random() < 0.95 ? 1 : 5;
+  }
+  return 0;
+};
+
 const App = () => {
   const [filaSP, setFilaSP] = useState([]);
   const [filaSG, setFilaSG] = useState([]);
@@ -55,6 +66,7 @@ const App = () => {
       emitida: data.toLocaleTimeString(),
       atendida: "",
       guiche: "",
+      tm: 0,
     };
     historico.push(registro);
 
@@ -77,7 +89,7 @@ const App = () => {
       senhaChamada = filaSP.shift();
       setFilaSP([...filaSP]);
       tipo = "SP";
-    } else if ((filaSE.length > 0 || filaSG.length > 0)) {
+    } else if (filaSE.length > 0 || filaSG.length > 0) {
       if (filaSE.length > 0) {
         senhaChamada = filaSE.shift();
         setFilaSE([...filaSE]);
@@ -96,6 +108,7 @@ const App = () => {
     if (atendimento) {
       atendimento.atendida = new Date().toLocaleTimeString();
       atendimento.guiche = `Guichê ${Math.floor(Math.random() * 5 + 1)}`;
+      atendimento.tm = gerarTempoAtendimento(tipo).toFixed(2);
     }
 
     setUltimasChamadas((prev) => {
@@ -107,46 +120,69 @@ const App = () => {
     setMensagem(`Chamando ${senhaChamada}`);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 text-gray-800 p-6 space-y-6 max-w-4xl mx-auto font-sans">
-      <div className="flex justify-center">
-        <img src={logo} alt="logo" className="h-20 mb-4" />
-      </div>
-      <h1 className="text-3xl font-bold text-center text-blue-800">Sistema de Atendimento</h1>
-      <p className="text-center text-sm text-gray-600">Priorize, atenda e acompanhe.</p>
+  const calcularMediaTM = (tipo) => {
+    const atendimentos = relatorio.filter(item => item.tipo === tipo && item.tm > 0);
+    if (atendimentos.length === 0) return "N/A";
+    const soma = atendimentos.reduce((acc, cur) => acc + parseFloat(cur.tm), 0);
+    return (soma / atendimentos.length).toFixed(2) + " min";
+  };
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  return (
+    <div className="w-full max-w-3xl p-4 flex flex-col items-center space-y-6">
+      {/* Logo */}
+      <img src={logo} alt="Logo" className="h-24 rounded-full shadow-md" />
+
+      {/* Título */}
+      <h1 className="text-3xl font-bold text-blue-800 text-center">Sistema de Atendimento</h1>
+      <p className="text-gray-600 text-center text-sm">Priorize, atenda e acompanhe.</p>
+
+      {/* Botões */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
         <Button onClick={() => emitirSenha("SP")} className="bg-red-600 hover:bg-red-700">Prioritária</Button>
         <Button onClick={() => emitirSenha("SE")} className="bg-blue-600 hover:bg-blue-700">Exames</Button>
         <Button onClick={() => emitirSenha("SG")} className="bg-gray-700 hover:bg-gray-800">Geral</Button>
       </div>
 
-      <Button onClick={chamarProximo} className="w-full bg-blue-800 hover:bg-blue-900">Chamar Próximo</Button>
+      <Button onClick={chamarProximo} className="w-full bg-indigo-700 hover:bg-indigo-800 py-4">Chamar Próxima Senha</Button>
 
+      {/* Mensagem */}
       {mensagem && <p className="text-center text-blue-700 font-medium">{mensagem}</p>}
 
+      {/* Últimas chamadas */}
       <Card>
-        <CardContent className="pt-4">
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Últimas Senhas Chamadas</h2>
-          <ul className="space-y-1 text-lg">
+        <CardContent>
+          <h2 className="text-xl font-semibold text-center text-gray-800 mb-3">Últimas Senhas Chamadas</h2>
+          <ul className="space-y-2 text-center text-gray-700">
             {ultimasChamadas.map((senha, idx) => (
-              <li key={idx}>
-              <span role="img" aria-label="ticket">🎟️</span> {senha}
-            </li>            
+              <li key={idx}><span role="img" aria-label="ticket">🎟️</span> {senha}</li>
             ))}
           </ul>
         </CardContent>
       </Card>
 
+      {/* Relatório */}
       <Card>
-        <CardContent className="pt-4">
-          <h2 className="text-xl font-semibold mb-2 text-gray-900">Relatório Diário (simulado)</h2>
-          <ul className="text-sm max-h-64 overflow-y-auto space-y-1">
+        <CardContent>
+          <h2 className="text-xl font-semibold text-center text-gray-800 mb-3">Relatório Diário (Simulado)</h2>
+          <ul className="text-sm space-y-2 max-h-64 overflow-y-auto">
             {relatorio.map((item, idx) => (
-              <li key={idx} className="border-b pb-1">
-                <strong>{item.senha}</strong> ({item.tipo}) - Emitida: {item.emitida} {item.atendida && `| Atendida: ${item.atendida} | ${item.guiche}`}
+              <li key={idx}>
+                <strong>{item.senha}</strong> ({item.tipo}) - Emitida: {item.emitida}
+                {item.atendida && ` | Atendida: ${item.atendida} | ${item.guiche} | TM: ${item.tm} min`}
               </li>
             ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Tempo médio */}
+      <Card>
+        <CardContent>
+          <h2 className="text-xl font-semibold text-center text-gray-800 mb-3">Tempo Médio de Atendimento</h2>
+          <ul className="text-sm space-y-1">
+            <li>Prioritária (SP): {calcularMediaTM("SP")}</li>
+            <li>Exames (SE): {calcularMediaTM("SE")}</li>
+            <li>Geral (SG): {calcularMediaTM("SG")}</li>
           </ul>
         </CardContent>
       </Card>
