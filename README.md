@@ -2,6 +2,10 @@
 
 Aplicativo de controle de senhas para atendimento em clínicas e laboratórios médicos, desenvolvido para a disciplina de Programação de Dispositivos Móveis.
 
+Projeto desenvolvido pela dupla **Flávia Sousa Amazonas** e **Germária Lins Vilela**.
+
+---
+
 ## 📋 Descrição do Projeto
 Este aplicativo permite a emissão, controle e atendimento de senhas para diferentes tipos de serviços (Prioritário, Exames e Geral), com regras específicas de priorização, controle de horários e relatórios estatísticos de atendimento.
 
@@ -68,7 +72,8 @@ npm versão 6.x ou superior
 
 Navegador atualizado (Google Chrome, Edge ou Firefox)
 
-📝 Licença
-Este projeto está licenciado sob a Licença Creative Commons Attribution 4.0 International.
+## 📝 Licença
 
-Veja o arquivo LICENSE para mais detalhes.
+Este projeto está licenciado sob a Licença Creative Commons CC0 1.0 Universal (Domínio Público).
+
+Consulte o arquivo [LICENSE](./LICENSE) para mais informações.
