@@ -8,10 +8,14 @@ const EmissaoSenha: React.FC = () => {
   const navigate = useNavigate();
   const { gerarSenha } = useSenha();
   const [ultimaSenha, setUltimaSenha] = useState<string | null>(null);
+  const [tipoUltimaSenha, setTipoUltimaSenha] = useState<string | null>(null);
 
   const handleEmitir = (tipo: "SP" | "SE" | "SG") => {
-    gerarSenha(tipo);
-    setUltimaSenha(tipo);
+    const novaSenha = gerarSenha(tipo);
+    if (novaSenha) {
+      setUltimaSenha(novaSenha.id);         
+      setTipoUltimaSenha(tipo);             
+    }
   };
 
   return (
@@ -19,16 +23,19 @@ const EmissaoSenha: React.FC = () => {
       <img src={logo} alt="Logo" className="logo" />
       <h1 className="titulo">Emitir Senha</h1>
       <p className="subtitulo">Escolha o tipo de atendimento:</p>
+
       <div className="botoes">
         <Button onClick={() => handleEmitir("SP")} className="botao-cliente">Prioritária</Button>
         <Button onClick={() => handleEmitir("SE")} className="botao-cliente">Exames</Button>
         <Button onClick={() => handleEmitir("SG")} className="botao-cliente">Geral</Button>
       </div>
-      {ultimaSenha && (
+
+      {ultimaSenha && tipoUltimaSenha && (
         <div className="mensagem">
-          🎟️ Senha de {ultimaSenha} emitida com sucesso!
+          🎟️ Senha <strong>{ultimaSenha}</strong> de tipo <strong>{tipoUltimaSenha}</strong> emitida com sucesso!
         </div>
       )}
+
       <Button onClick={() => navigate("/")} className="botao-voltar">Voltar</Button>
     </div>
   );

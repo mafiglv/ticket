@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { estaDentroDoHorario, calcularTempoMedio } from "../utils/timeUtils";
+import { estaDentroDoHorario, calcularTempoMedio, jaPassouHorario } from "../utils/timeUtils";
 
 export type TipoSenha = "SP" | "SE" | "SG";
 export type StatusSenha = "emitida" | "atendida" | "descartada";
@@ -18,7 +18,7 @@ export interface ISenha {
 
 interface ISenhaContext {
   senhas: ISenha[];
-  gerarSenha: (tipo: TipoSenha) => void;
+  gerarSenha: (tipo: TipoSenha) => ISenha | null;
   chamarProximaSenha: (guiche: string, agente: TipoAgente) => ISenha | null;
   marcarAtendido: (id: string) => void;
   ultimasChamadas: ISenha[];
@@ -32,10 +32,21 @@ export const SenhaProvider = ({ children }: { children: ReactNode }) => {
   const [ultimasChamadas, setUltimasChamadas] = useState<ISenha[]>([]);
   const [tempoMedio, setTempoMedio] = useState<number>(0);
 
-  const gerarSenha = (tipo: TipoSenha) => {
+  // Descarte automático de senhas emitidas após o horário
+  useEffect(() => {
+    if (jaPassouHorario()) {
+      const atualizadas = senhas.map((s) =>
+        s.status === "emitida" ? { ...s, status: "descartada" as StatusSenha } : s
+      );
+      setSenhas(atualizadas);
+    }
+  }, [senhas]); // ✅ Agora observa senhas
+  
+
+  const gerarSenha = (tipo: TipoSenha): ISenha | null => {
     if (!estaDentroDoHorario()) {
       alert("Fora do horário de atendimento (07h às 17h). Senha não pode ser emitida.");
-      return;
+      return null;
     }
 
     const hoje = new Date();
@@ -60,6 +71,7 @@ export const SenhaProvider = ({ children }: { children: ReactNode }) => {
     };
 
     setSenhas((prev) => [...prev, novaSenha]);
+    return novaSenha;
   };
 
   const chamarProximaSenha = (guiche: string, agente: TipoAgente): ISenha | null => {
@@ -81,26 +93,32 @@ export const SenhaProvider = ({ children }: { children: ReactNode }) => {
       emitidas.find((s) => prioridade.includes(s.tipo)) ||
       emitidas[0];
 
+    let tempoAtendimentoGerado = parseFloat((Math.random() * 5 + 1).toFixed(2));
+    // Para senhas de exame (SE), 95% chance de ser 1 min, 5% de ser 5 min
+    if (senhaSelecionada.tipo === "SE") {
+      tempoAtendimentoGerado = Math.random() < 0.95 ? 1 : 5;
+    }
+
+    const senhaAtualizada: ISenha = {
+      ...senhaSelecionada,
+      chamadas: senhaSelecionada.chamadas + 1,
+      status: (senhaSelecionada.chamadas + 1 >= 2 ? "descartada" : "atendida") as StatusSenha,
+      horaAtendimento: senhaSelecionada.horaAtendimento || new Date().toLocaleTimeString(),
+      tempoAtendimento: senhaSelecionada.tempoAtendimento || tempoAtendimentoGerado,
+      guiche,
+    };
+
     const atualizado = senhas.map((s) =>
-      s.id === senhaSelecionada.id
-        ? {
-            ...s,
-            chamadas: s.chamadas + 1,
-            status: (s.chamadas + 1 >= 2 ? "descartada" : "atendida") as StatusSenha,
-            horaAtendimento: s.horaAtendimento || new Date().toLocaleTimeString(),
-            tempoAtendimento: s.tempoAtendimento || parseFloat((Math.random() * 5 + 1).toFixed(2)),
-            guiche,
-          }
-        : s
+      s.id === senhaSelecionada.id ? senhaAtualizada : s
     );
 
     setSenhas(atualizado);
 
-    if (senhaSelecionada.status !== "descartada") {
-      setUltimasChamadas((prev) => [senhaSelecionada, ...prev.slice(0, 4)]);
+    if (senhaAtualizada.status !== "descartada") {
+      setUltimasChamadas((prev) => [senhaAtualizada, ...prev.slice(0, 4)]);
     }
 
-    return senhaSelecionada;
+    return senhaAtualizada;
   };
 
   const marcarAtendido = (id: string) => {
@@ -117,7 +135,7 @@ export const SenhaProvider = ({ children }: { children: ReactNode }) => {
     if (armazenadas) {
       const lista: ISenha[] = JSON.parse(armazenadas).map((s: any) => ({
         ...s,
-        status: s.status as StatusSenha, // <-- força o tipo StatusSenha
+        status: s.status as StatusSenha,
       }));
       setSenhas(lista);
     }
