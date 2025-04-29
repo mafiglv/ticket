@@ -44,8 +44,6 @@ Atendente chama clientes, vê atendimentos realizados e gera relatório.
 
 ![Painel de Atendimento](./assets/screenshot-painel.png)
 
-> 💡 *Substituir os prints acima pelos screenshots reais do seu projeto rodando.*
-
 ---
 
 ## 🚀 Como Rodar o Projeto
