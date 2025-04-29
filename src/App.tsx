@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import EmissaoSenha from "./pages/EmissaoSenha";
 import PainelAtendente from "./pages/PainelAtendente";
-import { SenhaProvider } from "./context/SenhaContext"; // <--- IMPORTANTE!
+import { SenhaProvider } from "./context/SenhaContext";
+import "./App.css";
 
-const App = () => {
+function App() {
   return (
     <SenhaProvider>
       <Router>
@@ -17,7 +18,6 @@ const App = () => {
       </Router>
     </SenhaProvider>
   );
-};
-
+}
 
 export default App;
