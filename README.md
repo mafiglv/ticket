@@ -32,17 +32,17 @@ O sistema foi desenvolvido em React e TypeScript, com armazenamento local no nav
 ### Tela Inicial
 Escolha entre Cliente e Atendente.
 
-![Tela Inicial](./assets/screenshot-home.png)
+![Tela Inicial]([./assets/screenshot-home.png](https://github.com/mafiglv/tickets/blob/main/src/assets/screenshot-home.png)
 
 ### Tela de Emissão de Senhas
 Cliente escolhe o tipo de senha para atendimento.
 
-![Emissão de Senhas](./assets/screenshot-emissao.png)
+![Emissão de Senhas]([./assets/screenshot-emissao.png](https://github.com/mafiglv/tickets/blob/main/src/assets/screenshot-emissao.png)
 
 ### Tela do Painel de Atendimento
 Atendente chama clientes, vê atendimentos realizados e gera relatório.
 
-![Painel de Atendimento](./assets/screenshot-painel.png)
+![Painel de Atendimento](https://github.com/mafiglv/tickets/blob/main/src/assets/screenshot-painel.png)
 
 ---
 
@@ -50,7 +50,7 @@ Atendente chama clientes, vê atendimentos realizados e gera relatório.
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/tickets.git
+   git clone https://github.com/mafiglv/tickets.git
 
 2. Instale as dependências:
     ```bash
